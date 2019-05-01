@@ -1,0 +1,5 @@
+INSERT INTO user(`birthday`, `email`, `genre`, `lastname`, `name`, `password`) VALUES('1987-09-18', 'rmcrodrigo1@gmail.com', '1', 'Montiel', 'Rodrigo', 'admin123')
+INSERT INTO category(`name`, `description`, `color`, `user_id`) VALUES('Despensa', 'Todos los gastos relacionados con comida', 'blue', 1)
+INSERT INTO category(`name`, `description`, `color`, `user_id`) VALUES('Auto', 'Todos los gastos relacionados con el auto', 'white', 1)
+INSERT INTO expense(`description`, `category_id`, `user_id`, `amount`, `expense_date`) VALUES('Gastos de la semana', 1, 1, 845.00, '2019-04-14')
+INSERT INTO income(`amount`,`description`,`income_date`,`user_id`) VALUES(10000,'Quincena del 15 de Abril','2019-04-15',1)
