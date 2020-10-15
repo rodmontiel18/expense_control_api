@@ -3,6 +3,7 @@ package com.rodmontiel.ec.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,10 @@ import com.rodmontiel.ec.dto.UserDTO;
 import com.rodmontiel.ec.ex.UserException;
 import com.rodmontiel.ec.service.UserService;
 
+@CrossOrigin(origins = {
+	"http://rodmontiel.com", "http://www.rodmontiel.com",
+	"https://rodmontiel.com", "https://www.rodmontiel.com"
+}, maxAge = 3600)
 @RestController
 @RequestMapping
 public class UserController {

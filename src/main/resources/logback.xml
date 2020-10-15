@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true" scan="true" scanPeriod="30 seconds">
+<configuration debug="true" scanPeriod="30 seconds">
 
     <property name="LOG_PATH" value="/opt/logs/expenses_control" />
     <property name="LOG_ARCHIVE" value="${LOG_PATH}/archived" />
