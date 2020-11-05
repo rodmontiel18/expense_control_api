@@ -3,7 +3,6 @@ package com.rodmontiel.ec.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,14 +19,9 @@ import com.rodmontiel.ec.contracts.v1.response.income.EditIncomeRs;
 import com.rodmontiel.ec.contracts.v1.response.income.GetIncomeRs;
 import com.rodmontiel.ec.contracts.v1.response.income.GetIncomesRs;
 import com.rodmontiel.ec.dto.IncomeDTO;
-import com.rodmontiel.ec.ex.IncomeException;
-import com.rodmontiel.ec.ex.UserException;
+import com.rodmontiel.ec.ex.GenericExceptionHandler;
 import com.rodmontiel.ec.service.IncomeService;
 
-@CrossOrigin(origins = {
-	"http://rodmontiel.com", "http://www.rodmontiel.com",
-	"https://rodmontiel.com", "https://www.rodmontiel.com"
-}, maxAge = 3600)
 @RestController
 @RequestMapping("/incomes")
 public class IncomeController {
@@ -35,50 +29,35 @@ public class IncomeController {
 	@Autowired
 	private IncomeService iService;
 	
-	@GetMapping("/admin")
-	public ResponseEntity<GetIncomesRs> getAllIncomes() throws Exception {
-		return new ResponseEntity<GetIncomesRs>(iService.getAllIncomes(), HttpStatus.OK);
-	}
-
-	@GetMapping("/admin/{incomeId}")
-	public ResponseEntity<GetIncomeRs> getIncomeById(@PathVariable long incomeId) {
-		return new ResponseEntity<GetIncomeRs>(iService.getIncomeById(incomeId), HttpStatus.OK);
-	}
-
-	@DeleteMapping("/admin/{incomeId}")
-	public ResponseEntity<DeleteIncomeRs> deleteIncome(@PathVariable long incomeId) throws Exception {
-		return new ResponseEntity<DeleteIncomeRs>(iService.deleteIncome(incomeId), HttpStatus.OK);
-	}
-	
 	@PostMapping
 	public ResponseEntity<AddIncomeRs> addIncome(@RequestHeader(value = "Authorization") String authData,
-			@RequestBody IncomeDTO income) throws UserException, Exception {
+			@RequestBody IncomeDTO income) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<AddIncomeRs>(iService.addIncome(authData, income), HttpStatus.OK);
 	}
 	
 	@GetMapping("/user/{incomeId}")
 	public ResponseEntity<GetIncomeRs> getUserIncomeById(@RequestHeader(value = "Authorization") String authData,
-			@PathVariable long incomeId) throws IncomeException, UserException, Exception {
+			@PathVariable long incomeId) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<GetIncomeRs>(iService.getUserIncomeById(authData, incomeId), HttpStatus.OK);
 	}
 	
 
 	@DeleteMapping("/user/{incomeId}")
 	public ResponseEntity<DeleteIncomeRs> deleteUserIncome(@RequestHeader(value = "Authorization") String authData,
-			@PathVariable long incomeId) throws UserException, IncomeException, Exception {
+			@PathVariable long incomeId) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<DeleteIncomeRs>(iService.deleteUserIncome(authData, incomeId), HttpStatus.OK);
 	}
 
 	@PutMapping("/user")
 	public ResponseEntity<EditIncomeRs> editUserIncome(@RequestBody IncomeDTO dtoIncome,
-			@RequestHeader(value = "Authorization") String authData) throws IncomeException, UserException, Exception {
+			@RequestHeader(value = "Authorization") String authData) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<EditIncomeRs>(iService.editUserIncome(authData, dtoIncome), HttpStatus.OK);
 	}
 
 	@GetMapping("/user/range/{from}/{to}")
 	public ResponseEntity<GetIncomesRs> getUserIncomesByRangeDate(
 			@RequestHeader(value = "Authorization") String authData, @PathVariable long from, @PathVariable long to)
-			throws IncomeException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<GetIncomesRs>(iService.getUserIncomesByRangeDate(authData, from, to),
 				HttpStatus.OK);
 	}

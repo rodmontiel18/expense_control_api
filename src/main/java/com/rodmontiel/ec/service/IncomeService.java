@@ -12,9 +12,7 @@ import com.rodmontiel.ec.contracts.v1.response.income.EditIncomeRs;
 import com.rodmontiel.ec.contracts.v1.response.income.GetIncomeRs;
 import com.rodmontiel.ec.contracts.v1.response.income.GetIncomesRs;
 import com.rodmontiel.ec.dto.IncomeDTO;
-import com.rodmontiel.ec.ex.ExpenseException;
-import com.rodmontiel.ec.ex.IncomeException;
-import com.rodmontiel.ec.ex.UserException;
+import com.rodmontiel.ec.ex.GenericExceptionHandler;
 import com.rodmontiel.ec.model.Category;
 import com.rodmontiel.ec.model.Income;
 import com.rodmontiel.ec.model.User;
@@ -32,12 +30,13 @@ public class IncomeService {
 	@Autowired
 	private UserRepository userRepository;
 
-	public AddIncomeRs addIncome(String authData, IncomeDTO dtoIncome) throws UserException, Exception {
+	public AddIncomeRs addIncome(String authData, IncomeDTO dtoIncome) throws GenericExceptionHandler, Exception {
 
 		AddIncomeRs rs = new AddIncomeRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-		User user = userRepository.getUserByEmail(userEmail).orElseThrow(() -> new UserException("Invalid session"));
+		User user = userRepository.getUserByEmail(userEmail)
+			.orElseThrow(() -> new GenericExceptionHandler(110));
 
 		Income incomeToSave = mapDtoToIncome(dtoIncome);
 		incomeToSave.setUser(user);
@@ -50,14 +49,14 @@ public class IncomeService {
 	}
 
 	public EditIncomeRs editUserIncome(String authData, IncomeDTO dtoIncome)
-			throws IncomeException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		EditIncomeRs rs = new EditIncomeRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
 		Income incomeToEdit = incomeRep.getIncomeByIdAndUserEmail(dtoIncome.id, userEmail)
-				.orElseThrow(() -> new IncomeException("The income you want to edit does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(341));
 
 		incomeToEdit.setAmount(dtoIncome.amount);
 		incomeToEdit.setDescription(dtoIncome.description);
@@ -81,14 +80,14 @@ public class IncomeService {
 	}
 
 	public DeleteIncomeRs deleteUserIncome(String authData, long incomeId)
-			throws IncomeException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		DeleteIncomeRs rs = new DeleteIncomeRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
 		incomeRep.getIncomeByIdAndUserEmail(incomeId, userEmail)
-				.orElseThrow(() -> new IncomeException("The income you want to delete does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(342));
 		incomeRep.deleteById(incomeId);
 
 		rs.success = true;
@@ -108,12 +107,12 @@ public class IncomeService {
 		return rs;
 	}
 	
-	public GetIncomeRs getIncomeById(long incomeId) throws IncomeException {
+	public GetIncomeRs getIncomeById(long incomeId) throws GenericExceptionHandler {
 
 		GetIncomeRs rs = new GetIncomeRs();
 
 		Income income = incomeRep.findById(incomeId)
-				.orElseThrow(() -> new IncomeException("The income with the id " + incomeId + " dones not exixts"));
+				.orElseThrow(() -> new GenericExceptionHandler(343));
 
 		rs.income = mapIncomeToDto(income);
 		rs.success = true;
@@ -122,14 +121,14 @@ public class IncomeService {
 
 	}
 	
-	public GetIncomeRs getUserIncomeById(String authData, long incomeId) throws IncomeException, UserException, Exception {
+	public GetIncomeRs getUserIncomeById(String authData, long incomeId) throws GenericExceptionHandler, Exception {
 		
 		GetIncomeRs rs = new GetIncomeRs();
 		
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 		
 		Income income = incomeRep.getIncomeByIdAndUserEmail(incomeId, userEmail)
-				.orElseThrow(() -> new IncomeException("The income you want to get does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(343));
 		
 		rs.income = mapIncomeToDto(income);
 		rs.success = true;
@@ -138,7 +137,7 @@ public class IncomeService {
 	}
 
 	public GetIncomesRs getUserIncomesByRangeDate(String authData, long from, long to)
-			throws IncomeException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		GetIncomesRs rs = new GetIncomesRs();
 
@@ -150,7 +149,7 @@ public class IncomeService {
 			lFrom = new Date(from);
 			lTo = new Date(to);
 		} catch (Exception e) {
-			throw new ExpenseException("Incorrect dates");
+			throw new GenericExceptionHandler(301);
 		}
 
 		ArrayList<Income> incomes = (ArrayList<Income>) incomeRep.getUserIncomesByRangeDate(userEmail, lFrom, lTo);

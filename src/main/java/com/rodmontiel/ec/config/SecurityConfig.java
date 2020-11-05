@@ -30,18 +30,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     "/swagger-ui.html",
     "/webjars/**",
     // other public endpoints of your API may be appended to this array
-    "/signin",
-    "/signin/",
-    "/signup",
-    "/signup/",
+    "/confirm-account/**",
+    //"/confirm-account/**"
+    "/signin/**",
+    //"/signin/**",
+    "/signup/**",
+    //"/signup/",
+    "/request-reset-password/**",
+    "/reset-password/**"
   };
 
   @Autowired
   private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
   @Autowired
   private JwtRequestFilter jwtRequestFilter;
-
   @Autowired
   UserDetailsServiceImpl userDetailsService;
 
@@ -55,23 +57,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .authorizeRequests()
       .antMatchers(AUTH_WHITELIST)
       .permitAll()
-      .antMatchers(
-        "/categories/admin**",
-        "/categories/admin/**",
-        "/expenses/admin**",
-        "/expenses/admin/**",
-        "/incomes/admin**",
-        "/incomes/admin/**"
-      )
-      .hasAuthority("ADMIN")
       .anyRequest()
       .authenticated()
-      .and()
-      .exceptionHandling()
-      .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-      .and()
-      .sessionManagement()
-      .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+      .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+      .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
     http.addFilterBefore(
       jwtRequestFilter,

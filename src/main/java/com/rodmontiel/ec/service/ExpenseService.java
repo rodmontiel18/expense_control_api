@@ -18,8 +18,7 @@ import com.rodmontiel.ec.contracts.v1.response.expense.GetExpenseByIdRs;
 import com.rodmontiel.ec.contracts.v1.response.expense.GetExpensesByUserAndRangeDateRs;
 import com.rodmontiel.ec.contracts.v1.response.expense.GetExpensesFromRangeRs;
 import com.rodmontiel.ec.dto.ExpenseDTO;
-import com.rodmontiel.ec.ex.ExpenseException;
-import com.rodmontiel.ec.ex.UserException;
+import com.rodmontiel.ec.ex.GenericExceptionHandler;
 import com.rodmontiel.ec.model.Category;
 import com.rodmontiel.ec.model.Expense;
 import com.rodmontiel.ec.model.User;
@@ -43,19 +42,20 @@ public class ExpenseService {
 	private UserRepository userRep;
 
 	public EditUserExpenseRs editUserExpense(String authData, ExpenseDTO expenseDto)
-			throws UserException, ExpenseException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		EditUserExpenseRs rs = new EditUserExpenseRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
 		Expense expenseToUpdate = expenseRep.getExpenseByIdAndUserEmail(expenseDto.id, userEmail)
-				.orElseThrow(() -> new ExpenseException("The expense you want to edit does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(311));
 
-		User user = userRep.getUserByEmail(userEmail).orElseThrow(() -> new ExpenseException("Invalid session"));
+		User user = userRep.getUserByEmail(userEmail)
+			.orElseThrow(() -> new GenericExceptionHandler(130));
 
 		Category category = categoryRep.getCategoryByUserEmailAndCategoryId(expenseDto.categoryId, userEmail)
-				.orElseThrow(() -> new ExpenseException("Category likned to the expense does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(312));
 
 		expenseToUpdate.setAmount(expenseDto.amount);
 		expenseToUpdate.setCategory(category);
@@ -71,11 +71,11 @@ public class ExpenseService {
 		return rs;
 	}
 
-	public GetExpenseByIdRs getExpenseById(long expenseId) throws ExpenseException, Exception {
+	public GetExpenseByIdRs getExpenseById(long expenseId) throws GenericExceptionHandler, Exception {
 
 		GetExpenseByIdRs rs = new GetExpenseByIdRs();
 		Expense expense = expenseRep.findById(expenseId)
-				.orElseThrow(() -> new ExpenseException("Expense with id " + expenseId + " not found"));
+				.orElseThrow(() -> new GenericExceptionHandler(313));
 		rs.expense = mapExpenseToDto(expense);
 		rs.success = true;
 
@@ -94,7 +94,7 @@ public class ExpenseService {
 		return rs;
 	}
 
-	public GetExpensesFromRangeRs getExpensesFromRange(long from, long to) throws ExpenseException, Exception {
+	public GetExpensesFromRangeRs getExpensesFromRange(long from, long to) throws GenericExceptionHandler, Exception {
 
 		GetExpensesFromRangeRs rs = new GetExpensesFromRangeRs();
 
@@ -105,7 +105,7 @@ public class ExpenseService {
 			lFrom = new Date(from);
 			lTo = new Date(to);
 		} catch (Exception e) {
-			throw new ExpenseException("Incorrect dates");
+			throw new GenericExceptionHandler(301);
 		}
 
 		ArrayList<Expense> expenses = (ArrayList<Expense>) expenseRep.getExpensesFromRange(lFrom, lTo);
@@ -117,7 +117,7 @@ public class ExpenseService {
 	}
 
 	public GetExpensesByUserAndRangeDateRs getExpensesByUserAndRangeDate(String authData, long from, long to)
-			throws UserException, ExpenseException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		GetExpensesByUserAndRangeDateRs rs = new GetExpensesByUserAndRangeDateRs();
 
@@ -129,7 +129,7 @@ public class ExpenseService {
 			lFrom = new Date(from);
 			lTo = new Date(to);
 		} catch (Exception e) {
-			throw new ExpenseException("Incorrect dates");
+			throw new GenericExceptionHandler(301);
 		}
 
 		ArrayList<Expense> expenses = (ArrayList<Expense>) expenseRep.getExpensesByUserAndRange(userEmail, lFrom, lTo);
@@ -141,13 +141,13 @@ public class ExpenseService {
 
 	}
 
-	public GetExpenseByIdRs getUserExpenseById(String authData, long expenseId) throws ExpenseException, UserException, Exception {
+	public GetExpenseByIdRs getUserExpenseById(String authData, long expenseId) throws GenericExceptionHandler, Exception {
 		GetExpenseByIdRs rs = new GetExpenseByIdRs();
 		
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 		
 		Expense expense = expenseRep.getExpenseByIdAndUserEmail(expenseId, userEmail)
-				.orElseThrow(() -> new ExpenseException("The expense you want to get does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(313));
 		
 		rs.expense = mapExpenseToDto(expense);
 		rs.success = true;
@@ -155,14 +155,15 @@ public class ExpenseService {
 		return rs;
 	}
 	
-	public AddExpenseRs addExpense(String authData, ExpenseDTO expense) throws ExpenseException, Exception {
+	public AddExpenseRs addExpense(String authData, ExpenseDTO expense) throws GenericExceptionHandler, Exception {
 
 		try {
 
 			AddExpenseRs rs = new AddExpenseRs();
 
 			String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-			User user = userRep.getUserByEmail(userEmail).orElseThrow(() -> new ExpenseException("Invalid session"));
+			User user = userRep.getUserByEmail(userEmail)
+				.orElseThrow(() -> new GenericExceptionHandler(130));
 
 			Expense expenseToSave = mapDtoToExpense(expense);
 			expenseToSave.setUser(user);
@@ -174,7 +175,7 @@ public class ExpenseService {
 
 		} catch (Exception ex) {
 			gLogger.error("-----> Error: " + ex.getMessage() + "\n =====> " + ExceptionUtils.getStackTrace(ex));
-			throw new ExpenseException("Error saving expense");
+			throw new GenericExceptionHandler(314);
 		}
 
 	}
@@ -186,14 +187,14 @@ public class ExpenseService {
 		return rs;
 	}
 
-	public DeleteUserExpenseRs deleteUserExpense(String authData, long expenseId) throws UserException, Exception {
+	public DeleteUserExpenseRs deleteUserExpense(String authData, long expenseId) throws GenericExceptionHandler, Exception {
 
 		DeleteUserExpenseRs rs = new DeleteUserExpenseRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
 		expenseRep.getExpenseByIdAndUserEmail(expenseId, userEmail)
-				.orElseThrow(() -> new ExpenseException("The expense you want to delete does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(315));
 
 		expenseRep.deleteById(expenseId);
 

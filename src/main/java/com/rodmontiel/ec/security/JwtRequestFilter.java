@@ -34,13 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
-
-		if (!request.getServletPath().equals("/swagger-ui.html")
-				&& !request.getServletPath().startsWith("/webjars/springfox-swagger-ui")
-				&& !request.getServletPath().startsWith("/csrf") && !request.getServletPath().startsWith("/v2/api-docs")
-				&& !request.getServletPath().startsWith("/swagger-resources")
-				&& !request.getServletPath().equals("/signin") && !request.getServletPath().equals("/signup")) {
+			throws ServletException, IOException, ExpiredJwtException {
 
 			final String requestTokenHeader = request.getHeader("Authorization");
 
@@ -50,48 +44,33 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
 
 				jwtToken = requestTokenHeader.substring(7);
-
-				try {
 					
-					username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+				username = jwtTokenUtil.getUsernameFromToken(jwtToken);
 
-					if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-						UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
+					UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
 
-						if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
+					if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
 
-							UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+						UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
 
-									userDetails, null, userDetails.getAuthorities());
+								userDetails, null, userDetails.getAuthorities());
 
-							usernamePasswordAuthenticationToken
+						usernamePasswordAuthenticationToken
 
-									.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+								.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-							SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-						} else {
-							gLogger.error("-----> Error: Invalid token");
-						}
+						SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 					} else {
-						gLogger.error("-----> Error: Invalid email");
+						gLogger.error("-----> Error: Invalid token");
 					}
-
-				} catch (IllegalArgumentException e) {
-					gLogger.error("-----> Error: Unable to get JWT Token");
-				} catch (ExpiredJwtException e) {
-					gLogger.error("-----> Error: JWT Token has expired");
-				} catch (Exception e) {
-					gLogger.error("-----> Error: Invalid Token ===> " + e.getMessage());
+				} else {
+					gLogger.error("-----> Error: Invalid email");
 				}
 
-			} else {
-				if (requestTokenHeader == null)
-					gLogger.warn("-----> Error: Invalid token");
-				else
-					gLogger.warn("-----> Error: JWT Token does not begin with Bearer String");
-			}
-		}
+			} 
+			
 		filterChain.doFilter(request, response);
 	}
 

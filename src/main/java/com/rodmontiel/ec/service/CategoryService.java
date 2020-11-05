@@ -12,8 +12,7 @@ import com.rodmontiel.ec.contracts.v1.response.category.GetAllCategoriesRs;
 import com.rodmontiel.ec.contracts.v1.response.category.GetCategoriesByUserEmailRs;
 import com.rodmontiel.ec.contracts.v1.response.category.GetCategoryByIdRs;
 import com.rodmontiel.ec.dto.CategoryDTO;
-import com.rodmontiel.ec.ex.CategoryException;
-import com.rodmontiel.ec.ex.UserException;
+import com.rodmontiel.ec.ex.GenericExceptionHandler;
 import com.rodmontiel.ec.model.Category;
 import com.rodmontiel.ec.model.Expense;
 import com.rodmontiel.ec.model.Income;
@@ -39,17 +38,17 @@ public class CategoryService {
 	private UserRepository userRepository;
 
 	public AddUserCategoryRs addCategory(String authData, CategoryDTO categoryDto)
-			throws CategoryException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		AddUserCategoryRs rs = new AddUserCategoryRs();
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 		User user = userRepository.getUserByEmail(userEmail)
-				.orElseThrow(() -> new CategoryException("Invalid session"));
+				.orElseThrow(() -> new GenericExceptionHandler(130));
 
 		ArrayList<Category> categories = (ArrayList<Category>) categoryRep.getCategoryByNameAndUser(categoryDto.name,
 				userEmail);
 		if (!categories.isEmpty())
-			throw new CategoryException("The category already exists");
+			throw new GenericExceptionHandler(281);
 
 		Category category = mapDtoToCategory(categoryDto);
 		category.setUser(user);
@@ -63,23 +62,25 @@ public class CategoryService {
 	}
 
 	public DeleteUserCategoryRs deleteUserCategory(String authData, long categoryId)
-			throws CategoryException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		DeleteUserCategoryRs rs = new DeleteUserCategoryRs();
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
 		Category originalCat = categoryRep.getCategoryByUserEmailAndCategoryId(categoryId, userEmail)
-				.orElseThrow(() -> new CategoryException("The category you want to delete does not exists"));
-		
-		if(originalCat.getType() == 1) {
-			ArrayList<Expense> expenses = (ArrayList<Expense>) expenseRep.getUserExpensesByCategory(originalCat.getId(), userEmail);
-			if(expenses != null && !expenses.isEmpty()) {
-				throw new CategoryException("You cannot delete this category because it has associated expenses");
+				.orElseThrow(() -> new GenericExceptionHandler(282));
+
+		if (originalCat.getType() == 1) {
+			ArrayList<Expense> expenses = (ArrayList<Expense>) expenseRep.getUserExpensesByCategory(originalCat.getId(),
+					userEmail);
+			if (expenses != null && !expenses.isEmpty()) {
+				throw new GenericExceptionHandler(283);
 			}
 		} else {
-			ArrayList<Income> incomes = (ArrayList<Income>) incomeRep.getUserIncomesByCategory(originalCat.getId(), userEmail);
-			if(incomes != null && !incomes.isEmpty()) {
-				throw new CategoryException("You cannot delete this category because it has associated incomes");
+			ArrayList<Income> incomes = (ArrayList<Income>) incomeRep.getUserIncomesByCategory(originalCat.getId(),
+					userEmail);
+			if (incomes != null && !incomes.isEmpty()) {
+				throw new GenericExceptionHandler(284);
 			}
 		}
 
@@ -91,22 +92,22 @@ public class CategoryService {
 	}
 
 	public EditUserCategoryRs editUserCategory(String authData, CategoryDTO categoryDto)
-			throws CategoryException, UserException, Exception {
+			throws GenericExceptionHandler, Exception {
 
 		EditUserCategoryRs rs = new EditUserCategoryRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 		User user = userRepository.getUserByEmail(userEmail)
-				.orElseThrow(() -> new CategoryException("Invalid session"));
-		
+				.orElseThrow(() -> new GenericExceptionHandler(130));
+
 		Category originalCat = categoryRep.getCategoryByUserEmailAndCategoryId(categoryDto.id, userEmail)
-				.orElseThrow(() -> new CategoryException("The category you want to modify does not exists"));
+				.orElseThrow(() -> new GenericExceptionHandler(285));
 
 		ArrayList<Category> categories = (ArrayList<Category>) categoryRep.getCategoryByNameAndUser(categoryDto.name,
 				userEmail);
-		
+
 		if (!categories.isEmpty() && categories.get(0).getId() != originalCat.getId())
-			throw new CategoryException("The new name you want to use is already in use");
+			throw new GenericExceptionHandler(286);
 
 		Category updatedCat = mapDtoToCategory(categoryDto);
 		updatedCat.setId(originalCat.getId());
@@ -130,22 +131,25 @@ public class CategoryService {
 		return rs;
 
 	}
-	
-	public GetCategoriesByUserEmailRs getCategoriesByTypeAndUserEmail(String authData, int categoryType) throws UserException, Exception {
-		
+
+	public GetCategoriesByUserEmailRs getCategoriesByTypeAndUserEmail(String authData, int categoryType)
+			throws GenericExceptionHandler, Exception {
+
 		GetCategoriesByUserEmailRs rs = new GetAllCategoriesRs();
-		
+
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
-		ArrayList<Category> categories = (ArrayList<Category>) categoryRep.getCategoriesByTypeAndUserEmail(categoryType, userEmail);
+		ArrayList<Category> categories = (ArrayList<Category>) categoryRep.getCategoriesByTypeAndUserEmail(categoryType,
+				userEmail);
 
 		rs.categories = mapCategoriesToDto(categories);
 		rs.success = true;
-		
+
 		return rs;
 	}
 
-	public GetCategoriesByUserEmailRs getCategoriesByUserEmail(String authData) throws UserException, Exception {
+	public GetCategoriesByUserEmailRs getCategoriesByUserEmail(String authData)
+			throws GenericExceptionHandler, Exception {
 
 		GetCategoriesByUserEmailRs rs = new GetCategoriesByUserEmailRs();
 
@@ -160,12 +164,12 @@ public class CategoryService {
 
 	}
 
-	public GetCategoryByIdRs getCategoryById(long id) throws CategoryException, Exception {
+	public GetCategoryByIdRs getCategoryById(long id) throws GenericExceptionHandler, Exception {
 
 		GetCategoryByIdRs rs = new GetCategoryByIdRs();
 
 		Category cat = categoryRep.findById(id)
-				.orElseThrow(() -> new CategoryException("Category with id " + id + " not found"));
+			.orElseThrow(() -> new GenericExceptionHandler(287));
 
 		rs.category = mapCategoryToDto(cat);
 		rs.success = true;
@@ -174,20 +178,21 @@ public class CategoryService {
 
 	}
 
-	public GetCategoryByIdRs getUserCategoryById(String authData, long categoryId) throws CategoryException, UserException, Exception {
+	public GetCategoryByIdRs getUserCategoryById(String authData, long categoryId)
+			throws GenericExceptionHandler, Exception {
 		GetCategoryByIdRs rs = new GetCategoryByIdRs();
-		
+
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-		
+
 		Category category = categoryRep.getCategoryByUserEmailAndCategoryId(categoryId, userEmail)
-				.orElseThrow(() -> new CategoryException("The category you want to get does not exists"));
-		
+				.orElseThrow(() -> new GenericExceptionHandler(287));
+
 		rs.category = mapCategoryToDto(category);
 		rs.success = true;
-		
+
 		return rs;
 	}
-	
+
 	private ArrayList<CategoryDTO> mapCategoriesToDto(ArrayList<Category> categories) {
 		ArrayList<CategoryDTO> dtoCats = new ArrayList<CategoryDTO>();
 		for (Category category : categories) {

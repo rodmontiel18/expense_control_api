@@ -1,7 +1,5 @@
 package com.rodmontiel.ec.contracts.v1.response;
 
-import java.util.Collection;
-
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BaseResponse {
 
-	public Collection<String> errors;
+	public int code;
+	public String error;
 	public boolean success;
 }

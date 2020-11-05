@@ -5,12 +5,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import com.rodmontiel.ec.ex.UserException;
+import com.rodmontiel.ec.ex.GenericExceptionHandler;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -21,26 +19,26 @@ public class JwtToken implements Serializable {
 
 	private static final long serialVersionUID = -2550185165626007488L;
 
-	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+	public static final long JWT_TOKEN_VALIDITY = 6 * 60 * 60;
 
-	@Value("_____")
+	@Value("${security.oauth2.authorization.jwt.key-password}")
 	private String secret;
 
-	public String getUsernameFromAuthorization(String authorization) throws UserException, Exception {
-		
+	public String getUsernameFromAuthorization(String authorization) throws GenericExceptionHandler, Exception {
+
 		if (authorization == null || !authorization.startsWith("Bearer"))
-			throw new UserException("Invalid session");
-		
+			throw new GenericExceptionHandler(130);
+
 		String token = authorization.replace("Bearer ", "");
 		if (isTokenExpired(token))
-			throw new UserException("Expired session");
-		
+			throw new GenericExceptionHandler(131);
+
 		String userEmail = this.getUsernameFromToken(token);
 		if (userEmail == null)
-			throw new UserException("Invalid session");
-		
+			throw new GenericExceptionHandler(130);
+
 		return userEmail;
-		
+
 	}
 
 	public String getUsernameFromToken(String token) {

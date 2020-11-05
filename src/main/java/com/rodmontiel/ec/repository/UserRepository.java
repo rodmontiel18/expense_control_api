@@ -14,8 +14,9 @@ import com.rodmontiel.ec.model.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	@Query(value = "SELECT u FROM User u WHERE UPPER(u.email) = UPPER(?1) and u.password = ?2")
-	public Optional<User> userLogin(String username, String password);
+	Optional<User> userLogin(String username, String password);
 	
 	@Query(value = "SELECT u FROM User u WHERE UPPER(u.email) = UPPER(?1)")
-	public Optional<User> getUserByEmail(String email);
+	Optional<User> getUserByEmail(String email);
+	
 }

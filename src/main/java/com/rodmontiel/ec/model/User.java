@@ -2,18 +2,13 @@ package com.rodmontiel.ec.model;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.Collection;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.ManyToMany;
-import javax.persistence.JoinTable;
-import javax.persistence.JoinColumn;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -47,14 +42,20 @@ public class User {
 	@JsonIgnore
 	@OneToMany(mappedBy = "user")
 	private List<Category> categories;
+
+	@Column(name = "creation_date", nullable = false)
+	private Date creationDate;
 	
 	@Column(nullable = false, unique = true)
 	private String email;
+	
+	private boolean enabled;
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "user")
 	private List<Expense> expenses;
 	
+	@Column(nullable = true)
 	private char genre;
 	
 	@Id
@@ -66,7 +67,7 @@ public class User {
 	@OneToMany(mappedBy = "user")
 	private List<Income> income;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String lastname;
 	
 	@Column(nullable = false)
@@ -76,16 +77,9 @@ public class User {
 	@Column(nullable = false)
 	private String password;
 	
-	@ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable( 
-            name = "user_role", 
-            joinColumns = @JoinColumn(
-              name = "user_id"), 
-            inverseJoinColumns = @JoinColumn(
-              name = "role_id")) 
-    private Collection<Role> roles;
-	
-	private boolean enabled;
-    private boolean tokenExpired;
+	// private boolean tokenExpired;
+
+	@Column(name = "update_date", nullable = false)
+	private Date updateDate;
 
 }
