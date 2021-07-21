@@ -30,7 +30,7 @@ public class CategoryController {
 	private CategoryService categoryService;
 
 	@GetMapping("/user")
-	public ResponseEntity<GetCategoriesByUserEmailRs> getCategoriesByUserEmail(
+	public ResponseEntity<GetCategoriesByUserEmailRs> getCategoriesByUser(
 			@RequestHeader(value = "Authorization") String authData) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<GetCategoriesByUserEmailRs>(categoryService.getCategoriesByUserEmail(authData),
 				HttpStatus.OK);

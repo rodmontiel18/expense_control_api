@@ -20,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +62,10 @@ public class UserService {
 
 	@Value("${spring.mail.username}")
 	private String fromEmail;
+	@Value("${spring.security.oauth2.client.registration.github.client-id}")
+	private String githubClientId;
+	@Value("${spring.security.oauth2.client.registration.github.client-secret}")
+	private String githubClientSecret;
 
 	public LoginRs login(String authData) throws GenericExceptionHandler, Exception {
 		LoginRs rs = new LoginRs();
@@ -82,8 +87,7 @@ public class UserService {
 		authenticate(email, pwd);
 
 		final UserDetails userDetails = udService.loadUserByUsername(email);
-		User user = userRepository.getUserByEmail(email)
-				.orElseThrow(() -> new GenericExceptionHandler(111));
+		User user = userRepository.getUserByEmail(email).orElseThrow(() -> new GenericExceptionHandler(111));
 
 		/*
 		 * if(!user.isEnabled()) { throw new GenericExceptionHandler(119,
@@ -123,9 +127,9 @@ public class UserService {
 			tokenRepository.save(token);
 
 			SimpleMailMessage msg = new SimpleMailMessage();
+			msg.setFrom(fromEmail);
 			msg.setTo(userToSave.getEmail());
 			msg.setSubject("Confirm registration!");
-			msg.setFrom(fromEmail);
 			msg.setText("Hello from Expenses Control WebApp!\n"
 					+ "Thank you for your registration, the final step it's to verify your account please click here:\n"
 					+ "http://localhost:3000/confirm-account?token=" + token.getToken());
@@ -185,16 +189,13 @@ public class UserService {
 
 	}
 
-	public User searchUserByEmail(String email) throws GenericExceptionHandler {
+	public User searchUserByEmail(String email) {
 		User user = userRepository.getUserByEmail(email).orElse(null);
-		if (user == null)
-			throw new GenericExceptionHandler(110);
 		return user;
 	}
 
-	public User findById(long userId) throws GenericExceptionHandler {
-		return userRepository.findById(userId)
-				.orElseThrow(() -> new GenericExceptionHandler(113));
+	public User findById(long userId) {
+		return userRepository.findById(userId).orElse(null);
 	}
 
 	private void authenticate(String username, String password) throws GenericExceptionHandler {
@@ -211,8 +212,8 @@ public class UserService {
 		OAuth2LoginRs rs = new OAuth2LoginRs();
 
 		Map<Object, Object> data = new HashMap<>();
-		data.put("client_id", "63b665c5a28378d7c372");
-		data.put("client_secret", "5b26326beb07666983c1e5f8d14ed5801900b05d");
+		data.put("client_id", githubClientId);
+		data.put("client_secret", githubClientSecret);
 		data.put("code", code);
 
 		HttpRequest request = HttpRequest.newBuilder().POST(buildFormDataFromMap(data))
@@ -220,6 +221,7 @@ public class UserService {
 				.header("Content-Type", "application/x-www-form-urlencoded").build();
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
 		if (response.statusCode() == 200 && !response.body().isBlank() && !response.body().contains("error=")
 				&& response.body().contains("access_token=")) {
 			var res = response.body().split("&");
@@ -241,32 +243,22 @@ public class UserService {
 				UserDTO userDTO = new Gson().fromJson(response2.body(), UserDTO.class);
 
 				if (userDTO != null && userDTO.email != null && !userDTO.email.isBlank()) {
-					try {
 
-						final UserDetails userDetails = udService.loadUserByUsername(userDTO.email);
+					User user = searchUserByEmail(userDTO.email);
 
-						User user = userRepository.getUserByEmail(userDTO.email).orElse(null);
-
-						if (!user.isEnabled()) {
-							throw new GenericExceptionHandler(119);
-						}
-
-						String token = jwtToken.generateToken(userDetails);
-						rs.token = token;
-						rs.code = 200;
-						rs.name = user.getName();
-						rs.email = userDTO.email;
-						rs.success = true;
-
-					} catch (GenericExceptionHandler gex) {
-						if (gex.code == 113) {
-							rs.code = 211;
-							rs.name = userDTO.name;
-							rs.birthday = userDTO.birthday;
-							rs.email = userDTO.email;
-							rs.success = true;
-						}
+					if (user == null || !user.isEnabled()) {
+						throw new GenericExceptionHandler(113);
 					}
+
+					UserDetails userDetails = mapUserToUserDetails(user);
+
+					String token = jwtToken.generateToken(userDetails);
+					rs.token = token;
+					rs.code = 200;
+					rs.name = user.getName();
+					rs.email = userDTO.email;
+					rs.success = true;
+
 				} else {
 					throw new GenericExceptionHandler(116);
 				}
@@ -296,8 +288,7 @@ public class UserService {
 
 		String email = jwtToken.getUsernameFromAuthorization(authData);
 
-		User user = userRepository.getUserByEmail(email)
-				.orElseThrow(() -> new GenericExceptionHandler(113));
+		User user = userRepository.getUserByEmail(email).orElseThrow(() -> new GenericExceptionHandler(113));
 
 		rs.user = mapUserToDto(user);
 		rs.success = true;
@@ -313,8 +304,7 @@ public class UserService {
 
 		String email = jwtToken.getUsernameFromAuthorization(authData);
 
-		User user = userRepository.getUserByEmail(email)
-				.orElseThrow(() -> new GenericExceptionHandler(113));
+		User user = userRepository.getUserByEmail(email).orElseThrow(() -> new GenericExceptionHandler(113));
 
 		try {
 			authenticate(email, request.oldPassword);
@@ -344,8 +334,7 @@ public class UserService {
 
 		String email = jwtToken.getUsernameFromAuthorization(authData);
 
-		User user = userRepository.getUserByEmail(email)
-				.orElseThrow(() -> new GenericExceptionHandler(113));
+		User user = userRepository.getUserByEmail(email).orElseThrow(() -> new GenericExceptionHandler(113));
 
 		user.setBirthday(userDto.birthday);
 		user.setGenre(userDto.genre);
@@ -397,4 +386,8 @@ public class UserService {
 		return HttpRequest.BodyPublishers.ofString(builder.toString());
 	}
 
+	private UserDetails mapUserToUserDetails(User user) {
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+				user.isEnabled(), true, true, true, new ArrayList<>());
+	}
 }
