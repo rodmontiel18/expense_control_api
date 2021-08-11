@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rodmontiel.ec.contracts.v1.response.income.AddIncomeRs;
@@ -28,19 +29,18 @@ public class IncomeController {
 
 	@Autowired
 	private IncomeService iService;
-	
+
 	@PostMapping
 	public ResponseEntity<AddIncomeRs> addIncome(@RequestHeader(value = "Authorization") String authData,
 			@RequestBody IncomeDTO income) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<AddIncomeRs>(iService.addIncome(authData, income), HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/user/{incomeId}")
 	public ResponseEntity<GetIncomeRs> getUserIncomeById(@RequestHeader(value = "Authorization") String authData,
 			@PathVariable long incomeId) throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<GetIncomeRs>(iService.getUserIncomeById(authData, incomeId), HttpStatus.OK);
 	}
-	
 
 	@DeleteMapping("/user/{incomeId}")
 	public ResponseEntity<DeleteIncomeRs> deleteUserIncome(@RequestHeader(value = "Authorization") String authData,
@@ -54,12 +54,11 @@ public class IncomeController {
 		return new ResponseEntity<EditIncomeRs>(iService.editUserIncome(authData, dtoIncome), HttpStatus.OK);
 	}
 
-	@GetMapping("/user/range/{from}/{to}")
+	@GetMapping("/user/range")
 	public ResponseEntity<GetIncomesRs> getUserIncomesByRangeDate(
-			@RequestHeader(value = "Authorization") String authData, @PathVariable long from, @PathVariable long to)
+			@RequestHeader(value = "Authorization") String authData, @RequestParam long from, @RequestParam long to)
 			throws GenericExceptionHandler, Exception {
-		return new ResponseEntity<GetIncomesRs>(iService.getUserIncomesByRangeDate(authData, from, to),
-				HttpStatus.OK);
+		return new ResponseEntity<GetIncomesRs>(iService.getUserIncomesByRangeDate(authData, from, to), HttpStatus.OK);
 	}
-	
+
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rodmontiel.ec.contracts.v1.response.expense.AddExpenseRs;
@@ -29,9 +30,9 @@ public class ExpenseController {
 	@Autowired
 	private ExpenseService expenseService;
 
-	@GetMapping("/user/range/{from}/{to}")
-	public ResponseEntity<GetExpensesByUserAndRangeDateRs> getExpensesByUserAndRangeDate(@PathVariable long from,
-			@PathVariable long to, @RequestHeader(name = "Authorization") String authData)
+	@GetMapping("/user/range")
+	public ResponseEntity<GetExpensesByUserAndRangeDateRs> getExpensesByUserAndRangeDate(
+			@RequestHeader(name = "Authorization") String authData, @RequestParam long from, @RequestParam long to)
 			throws GenericExceptionHandler, Exception {
 		return new ResponseEntity<GetExpensesByUserAndRangeDateRs>(
 				expenseService.getExpensesByUserAndRangeDate(authData, from, to), HttpStatus.OK);

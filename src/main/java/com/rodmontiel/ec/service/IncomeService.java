@@ -1,6 +1,6 @@
 package com.rodmontiel.ec.service;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,12 +142,12 @@ public class IncomeService {
 		GetIncomesRs rs = new GetIncomesRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-		Date lFrom;
-		Date lTo;
+		Timestamp lFrom;
+		Timestamp lTo;
 
 		try {
-			lFrom = new Date(from);
-			lTo = new Date(to);
+			lFrom = new Timestamp(from);
+			lTo = new Timestamp(to);
 		} catch (Exception e) {
 			throw new GenericExceptionHandler(301);
 		}

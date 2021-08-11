@@ -1,6 +1,6 @@
 package com.rodmontiel.ec.service;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -51,8 +51,7 @@ public class ExpenseService {
 		Expense expenseToUpdate = expenseRep.getExpenseByIdAndUserEmail(expenseDto.id, userEmail)
 				.orElseThrow(() -> new GenericExceptionHandler(311));
 
-		User user = userRep.getUserByEmail(userEmail)
-			.orElseThrow(() -> new GenericExceptionHandler(130));
+		User user = userRep.getUserByEmail(userEmail).orElseThrow(() -> new GenericExceptionHandler(130));
 
 		Category category = categoryRep.getCategoryByUserEmailAndCategoryId(expenseDto.categoryId, userEmail)
 				.orElseThrow(() -> new GenericExceptionHandler(312));
@@ -74,8 +73,7 @@ public class ExpenseService {
 	public GetExpenseByIdRs getExpenseById(long expenseId) throws GenericExceptionHandler, Exception {
 
 		GetExpenseByIdRs rs = new GetExpenseByIdRs();
-		Expense expense = expenseRep.findById(expenseId)
-				.orElseThrow(() -> new GenericExceptionHandler(313));
+		Expense expense = expenseRep.findById(expenseId).orElseThrow(() -> new GenericExceptionHandler(313));
 		rs.expense = mapExpenseToDto(expense);
 		rs.success = true;
 
@@ -98,12 +96,12 @@ public class ExpenseService {
 
 		GetExpensesFromRangeRs rs = new GetExpensesFromRangeRs();
 
-		Date lFrom;
-		Date lTo;
+		Timestamp lFrom;
+		Timestamp lTo;
 
 		try {
-			lFrom = new Date(from);
-			lTo = new Date(to);
+			lFrom = new Timestamp(from);
+			lTo = new Timestamp(to);
 		} catch (Exception e) {
 			throw new GenericExceptionHandler(301);
 		}
@@ -123,11 +121,11 @@ public class ExpenseService {
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
-		Date lFrom;
-		Date lTo;
+		Timestamp lFrom;
+		Timestamp lTo;
 		try {
-			lFrom = new Date(from);
-			lTo = new Date(to);
+			lFrom = new Timestamp(from);
+			lTo = new Timestamp(to);
 		} catch (Exception e) {
 			throw new GenericExceptionHandler(301);
 		}
@@ -141,20 +139,21 @@ public class ExpenseService {
 
 	}
 
-	public GetExpenseByIdRs getUserExpenseById(String authData, long expenseId) throws GenericExceptionHandler, Exception {
+	public GetExpenseByIdRs getUserExpenseById(String authData, long expenseId)
+			throws GenericExceptionHandler, Exception {
 		GetExpenseByIdRs rs = new GetExpenseByIdRs();
-		
+
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-		
+
 		Expense expense = expenseRep.getExpenseByIdAndUserEmail(expenseId, userEmail)
 				.orElseThrow(() -> new GenericExceptionHandler(313));
-		
+
 		rs.expense = mapExpenseToDto(expense);
 		rs.success = true;
-		
+
 		return rs;
 	}
-	
+
 	public AddExpenseRs addExpense(String authData, ExpenseDTO expense) throws GenericExceptionHandler, Exception {
 
 		try {
@@ -162,8 +161,7 @@ public class ExpenseService {
 			AddExpenseRs rs = new AddExpenseRs();
 
 			String userEmail = tokenTools.getUsernameFromAuthorization(authData);
-			User user = userRep.getUserByEmail(userEmail)
-				.orElseThrow(() -> new GenericExceptionHandler(130));
+			User user = userRep.getUserByEmail(userEmail).orElseThrow(() -> new GenericExceptionHandler(130));
 
 			Expense expenseToSave = mapDtoToExpense(expense);
 			expenseToSave.setUser(user);
@@ -187,14 +185,14 @@ public class ExpenseService {
 		return rs;
 	}
 
-	public DeleteUserExpenseRs deleteUserExpense(String authData, long expenseId) throws GenericExceptionHandler, Exception {
+	public DeleteUserExpenseRs deleteUserExpense(String authData, long expenseId)
+			throws GenericExceptionHandler, Exception {
 
 		DeleteUserExpenseRs rs = new DeleteUserExpenseRs();
 
 		String userEmail = tokenTools.getUsernameFromAuthorization(authData);
 
-		expenseRep.getExpenseByIdAndUserEmail(expenseId, userEmail)
-				.orElseThrow(() -> new GenericExceptionHandler(315));
+		expenseRep.getExpenseByIdAndUserEmail(expenseId, userEmail).orElseThrow(() -> new GenericExceptionHandler(315));
 
 		expenseRep.deleteById(expenseId);
 
@@ -207,10 +205,10 @@ public class ExpenseService {
 	private Expense mapDtoToExpense(ExpenseDTO dtoExpense) {
 		Expense expense = new Expense();
 		expense.setAmount(dtoExpense.amount);
-		
+
 		Category cat = new Category();
 		cat.setId(dtoExpense.categoryId);
-		
+
 		expense.setCategory(cat);
 		expense.setDescription(dtoExpense.description);
 		expense.setExpenseDate(dtoExpense.expenseDate);

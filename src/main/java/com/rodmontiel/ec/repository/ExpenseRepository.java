@@ -1,6 +1,6 @@
 package com.rodmontiel.ec.repository;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -14,14 +14,14 @@ import com.rodmontiel.ec.model.Expense;
 public interface ExpenseRepository extends CrudRepository<Expense, Long> {
 
 	@Query(value = "SELECT e FROM Expense e WHERE e.expenseDate BETWEEN ?1 AND ?2")
-	public Collection<Expense> getExpensesFromRange(Date from, Date to);
-	
+	public Collection<Expense> getExpensesFromRange(Timestamp from, Timestamp to);
+
 	@Query(value = "SELECT e FROM Expense e WHERE UPPER(user.email) = UPPER(?1) AND e.expenseDate BETWEEN ?2 AND ?3 ORDER BY e.expenseDate ASC")
-	public Collection<Expense> getExpensesByUserAndRange(String email, Date from, Date to);
-	
+	public Collection<Expense> getExpensesByUserAndRange(String email, Timestamp from, Timestamp to);
+
 	@Query(value = "SELECT e FROM Expense e WHERE e.id = ?1 AND UPPER(e.user.email) = UPPER(?2)")
 	public Optional<Expense> getExpenseByIdAndUserEmail(long expenseId, String userEmail);
-	
+
 	@Query(value = "SELECT e FROM Expense e WHERE e.category.id = ?1 AND UPPER(e.user.email) = UPPER(?2)")
 	public Collection<Expense> getUserExpensesByCategory(long categoryId, String userEmail);
 }

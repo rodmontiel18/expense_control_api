@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+// import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -55,8 +55,9 @@ public class UserService {
 	private UserRepository userRepository;
 	@Autowired
 	private VerificationTokenRepository tokenRepository;
-	@Autowired
-	private JavaMailSender javaMailSender;
+	/*
+	 * @Autowired private JavaMailSender javaMailSender;
+	 */
 	@Autowired
 	private HttpClient httpClient;
 
@@ -126,15 +127,17 @@ public class UserService {
 			VerificationToken token = new VerificationToken(user);
 			tokenRepository.save(token);
 
-			SimpleMailMessage msg = new SimpleMailMessage();
-			msg.setFrom(fromEmail);
-			msg.setTo(userToSave.getEmail());
-			msg.setSubject("Confirm registration!");
-			msg.setText("Hello from Expenses Control WebApp!\n"
-					+ "Thank you for your registration, the final step it's to verify your account please click here:\n"
-					+ "http://localhost:3000/confirm-account?token=" + token.getToken());
-
-			javaMailSender.send(msg);
+			/*
+			 * SimpleMailMessage msg = new SimpleMailMessage();
+			 * 
+			 * msg.setFrom(fromEmail); msg.setTo(userToSave.getEmail());
+			 * msg.setSubject("Confirm registration!");
+			 * msg.setText("Hello from Expenses Control WebApp!\n" +
+			 * "Thank you for your registration, the final step it's to verify your account please click here:\n"
+			 * + "http://localhost:3000/confirm-account?token=" + token.getToken());
+			 * 
+			 * javaMailSender.send(msg);
+			 */
 			rs.success = true;
 			rs.signupMessage = "User registered successfully";
 
@@ -171,7 +174,7 @@ public class UserService {
 				msg.setText("Hello from Expenses Control WebApp!\n" + "Click the next link to reset your password:\n"
 						+ "http://localhost:3000/reset-password-form?token=" + token.getToken());
 
-				javaMailSender.send(msg);
+				// javaMailSender.send(msg);
 
 			} catch (Exception ex) {
 				gLogger.error("--------------------------------------------------------------------------------");
